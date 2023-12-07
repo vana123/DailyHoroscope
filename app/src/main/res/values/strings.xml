@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">DailyHoroscope</string>
+    <string name="get_horoscope">Get Horoscope</string>
 </resources>
