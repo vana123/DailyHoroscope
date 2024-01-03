@@ -7,8 +7,7 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -33,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun getHoroscope(sunsign: String) {
-        GlobalScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch {
             try {
                 val response = ApiClient.astrologyApi.getHoroscopeToday(sunsign.lowercase(Locale.ROOT))
                 val horoscopeText = "Horoscope for $sunsign:\n${response.horoscope}"
