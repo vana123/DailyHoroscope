@@ -7,11 +7,11 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import java.util.Locale
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var viewModel: HoroscopeViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -26,22 +26,24 @@ class MainActivity : AppCompatActivity() {
         val button: Button = findViewById(R.id.button)
         button.setOnClickListener {
             val selectedSign = spinner.selectedItem as String
-            getHoroscope(selectedSign)
+            viewModel.getHoroscope(selectedSign)
+        }
+
+        viewModel = ViewModelProvider(this, HoroscopeViewModelFactory()).get(HoroscopeViewModel::class.java)
+
+        val textView: TextView = findViewById(R.id.textView)
+        viewModel.horoscopeText.observe(this, { horoscopeText ->
+            textView.text = horoscopeText
+        })
+    }
+    class HoroscopeViewModelFactory : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            val repository = HoroscopeRepository(ApiClient.astrologyApi)
+            return HoroscopeViewModel(repository) as T
         }
     }
-
     @SuppressLint("SetTextI18n")
     private fun getHoroscope(sunsign: String) {
-        lifecycleScope.launch {
-            try {
-                val response = ApiClient.astrologyApi.getHoroscopeToday(sunsign.lowercase(Locale.ROOT))
-                val horoscopeText = "Horoscope for $sunsign:\n${response.horoscope}"
-                val index = horoscopeText.indexOf("(c)")
-                val truncatedText = if (index != -1) horoscopeText.substring(0, index) else horoscopeText
-                findViewById<TextView>(R.id.textView).text = truncatedText
-            } catch (e: Exception) {
-                findViewById<TextView>(R.id.textView).text = "Error: ${e.message}"
-            }
-        }
+        viewModel.getHoroscope(sunsign)
     }
 }
